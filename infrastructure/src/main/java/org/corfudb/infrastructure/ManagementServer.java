@@ -56,11 +56,6 @@ public class ManagementServer extends AbstractServer {
      */
     private IReconfigurationHandlerPolicy failureHandlerPolicy;
     private IReconfigurationHandlerPolicy healingPolicy;
-    /**
-     * Bootstrap endpoint to seed the Management Server.
-     */
-    @Getter
-    private final String bootstrapEndpoint;
 
     @Getter
     private final ManagementAgent managementAgent;
@@ -103,9 +98,6 @@ public class ManagementServer extends AbstractServer {
         this.localEndpoint = this.opts.get("--address") + ":" + this.opts.get("<port>");
         this.serverContext = serverContext;
 
-        bootstrapEndpoint = (opts.get("--management-server") != null)
-                ? opts.get("--management-server").toString() : null;
-
         this.failureHandlerPolicy = serverContext.getFailureHandlerPolicy();
         this.healingPolicy = serverContext.getHealingHandlerPolicy();
 
@@ -128,8 +120,6 @@ public class ManagementServer extends AbstractServer {
         // Runtime can be set up either using the layout or the bootstrapEndpoint address.
         if (managementLayout != null) {
             managementLayout.getLayoutServers().forEach(runtime::addLayoutServer);
-        } else {
-            runtime.addLayoutServer(getBootstrapEndpoint());
         }
         runtime.connect();
         log.info("getCorfuRuntime: Corfu Runtime connected successfully");
@@ -144,10 +134,8 @@ public class ManagementServer extends AbstractServer {
     private final CorfuMsgHandler handler =
             CorfuMsgHandler.generateHandler(MethodHandles.lookup(), this);
 
-    private boolean checkBootstrap(CorfuMsg msg,
-                                   ChannelHandlerContext ctx,
-                                   IServerRouter r) {
-        if (serverContext.getManagementLayout() == null && bootstrapEndpoint == null) {
+    private boolean checkBootstrap(CorfuMsg msg) {
+        if (serverContext.getManagementLayout() == null) {
             log.warn("Received message but not bootstrapped! Message={}", msg);
             return false;
         }
@@ -203,10 +191,10 @@ public class ManagementServer extends AbstractServer {
      */
     @ServerHandler(type = CorfuMsgType.MANAGEMENT_FAILURE_DETECTED)
     public void handleFailureDetectedMsg(CorfuPayloadMsg<DetectorMsg> msg,
-                                                      ChannelHandlerContext ctx, IServerRouter r) {
+                                         ChannelHandlerContext ctx, IServerRouter r) {
 
         // This server has not been bootstrapped yet, ignore all requests.
-        if (!checkBootstrap(msg, ctx, r)) {
+        if (!checkBootstrap(msg)) {
             r.sendResponse(ctx, msg, new CorfuMsg(CorfuMsgType.MANAGEMENT_NOBOOTSTRAP_ERROR));
             return;
         }
@@ -250,10 +238,10 @@ public class ManagementServer extends AbstractServer {
      */
     @ServerHandler(type = CorfuMsgType.MANAGEMENT_HEALING_DETECTED)
     public void handleHealingDetectedMsg(CorfuPayloadMsg<DetectorMsg> msg,
-                                                      ChannelHandlerContext ctx, IServerRouter r) {
+                                         ChannelHandlerContext ctx, IServerRouter r) {
 
         // This server has not been bootstrapped yet, ignore all requests.
-        if (!checkBootstrap(msg, ctx, r)) {
+        if (!checkBootstrap(msg)) {
             r.sendResponse(ctx, msg, new CorfuMsg(CorfuMsgType.MANAGEMENT_NOBOOTSTRAP_ERROR));
             return;
         }
@@ -327,7 +315,7 @@ public class ManagementServer extends AbstractServer {
     @ServerHandler(type = CorfuMsgType.MANAGEMENT_LAYOUT_REQUEST)
     public void handleLayoutRequest(CorfuMsg msg, ChannelHandlerContext ctx, IServerRouter r) {
         // This server has not been bootstrapped yet, ignore all requests.
-        if (!checkBootstrap(msg, ctx, r)) {
+        if (!checkBootstrap(msg)) {
             r.sendResponse(ctx, msg, new CorfuMsg(CorfuMsgType.MANAGEMENT_NOBOOTSTRAP_ERROR));
             return;
         }
