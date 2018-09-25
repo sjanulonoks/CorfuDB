@@ -2,24 +2,14 @@ package org.corfudb.universe.node.docker;
 
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
+import com.spotify.docker.client.messages.*;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.corfudb.universe.node.AbstractCorfuServer;
 import org.corfudb.universe.node.CorfuServer;
+import org.corfudb.universe.node.CorfuServer.ServerParams;
 import org.corfudb.universe.node.NodeException;
-import org.corfudb.universe.universe.UniverseException;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,15 +22,18 @@ import static org.corfudb.universe.universe.Universe.UniverseParams;
  * Implements a docker instance representing a {@link CorfuServer}.
  */
 @Slf4j
-@Builder
-public class CorfuServerDockerized implements CorfuServer {
+public class CorfuServerDockerized extends AbstractCorfuServer<ServerParams> {
     private static final String IMAGE_NAME = "corfu-server:" + getAppVersion();
-    public static final String ALL_NETWORK_INTERFACES = "0.0.0.0";
 
-    @Getter
-    private final ServerParams params;
     private final DockerClient docker;
     private final UniverseParams universeParams;
+
+    @Builder
+    public CorfuServerDockerized(ServerParams params, DockerClient docker, UniverseParams universeParams) {
+        super(params);
+        this.docker = docker;
+        this.universeParams = universeParams;
+    }
 
     /**
      * Deploys a Corfu server / docker container
@@ -164,51 +157,5 @@ public class CorfuServerDockerized implements CorfuServer {
                 log.debug("Corfu server shutdown hook. Can't kill container: {}", params.getName());
             }
         }));
-    }
-
-    private static String getAppVersion() {
-        MavenXpp3Reader reader = new MavenXpp3Reader();
-        Model model;
-        try {
-            model = reader.read(new FileReader("pom.xml"));
-            return model.getParent().getVersion();
-        } catch (IOException | XmlPullParserException e) {
-            throw new NodeException("Can't parse application version", e);
-        }
-    }
-
-    /**
-     * This method create a command line string for starting Corfu server
-     *
-     * @return command line parameters
-     */
-    private String getCommandLineParams() {
-        StringBuilder cmd = new StringBuilder();
-        cmd.append("-a ").append(ALL_NETWORK_INTERFACES);
-
-        switch (params.getPersistence()) {
-            case DISK:
-                if (StringUtils.isEmpty(params.getLogDir())) {
-                    throw new UniverseException("Invalid log dir in disk persistence mode");
-                }
-                cmd.append(" -l ").append(params.getLogDir());
-                break;
-            case MEMORY:
-                cmd.append(" -m");
-                break;
-        }
-
-        if (params.getMode() == Mode.SINGLE) {
-            cmd.append(" -s");
-        }
-
-        cmd.append(" -d ").append(params.getLogLevel().toString()).append(" ");
-
-        cmd.append(params.getPort());
-
-        String cmdLineParams = cmd.toString();
-        log.trace("Command line parameters: {}", cmdLineParams);
-
-        return cmdLineParams;
     }
 }

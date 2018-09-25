@@ -5,6 +5,7 @@ import org.corfudb.universe.universe.Universe;
 import org.corfudb.universe.universe.docker.DockerUniverse;
 import org.corfudb.universe.universe.process.ProcessUniverse;
 import org.corfudb.universe.universe.vm.VmUniverse;
+import org.corfudb.universe.universe.vm.VmUniverse.VmUniverseParams;
 
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
@@ -38,8 +39,11 @@ public class UniverseFactory {
                 .build();
     }
 
-    public VmUniverse buildVmUniverse(UniverseParams universeParams) {
-        throw new UnsupportedOperationException();
+    public VmUniverse buildVmUniverse(VmUniverseParams universeParams) {
+        return VmUniverse.builder()
+                .universeParams(universeParams)
+                .numThreads(10)
+                .build();
     }
 
     public ProcessUniverse buildProcessUniverse(UniverseParams universeParams) {

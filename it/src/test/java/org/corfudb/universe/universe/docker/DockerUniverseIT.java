@@ -5,7 +5,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
 import org.corfudb.universe.UniverseFactory;
 import org.corfudb.universe.group.CorfuCluster.CorfuClusterParams;
-import org.corfudb.universe.scenario.fixture.Fixtures.CorfuClusterFixture;
+import org.corfudb.universe.scenario.fixture.Fixtures.CorfuGroupFixture;
 import org.corfudb.universe.scenario.fixture.Fixtures.MultipleServersFixture;
 import org.corfudb.universe.scenario.fixture.Fixtures.UniverseFixture;
 import org.junit.After;
@@ -41,7 +41,7 @@ public class DockerUniverseIT {
     @Test
     public void deploySingleGroupSingleNodeTest() throws Exception {
         MultipleServersFixture serversFixture = MultipleServersFixture.builder().numNodes(1).build();
-        CorfuClusterFixture groupFixture = CorfuClusterFixture.builder().servers(serversFixture).build();
+        CorfuGroupFixture groupFixture = CorfuGroupFixture.builder().servers(serversFixture).build();
         UniverseFixture universeFixture = UniverseFixture.builder().group(groupFixture).build();
 
         UniverseParams universeParams = universeFixture.data();

@@ -1,6 +1,7 @@
 package org.corfudb.universe.universe;
 
 import com.google.common.collect.ImmutableMap;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,7 +64,8 @@ public interface Universe {
 
     <T extends Group> T getGroup(String groupName);
 
-    @Builder(toBuilder = true)
+    @Builder(toBuilder = true, builderMethodName = "universeBuilder")
+    @AllArgsConstructor
     @EqualsAndHashCode
     class UniverseParams {
         private static final int TIMEOUT_IN_SECONDS = 5;

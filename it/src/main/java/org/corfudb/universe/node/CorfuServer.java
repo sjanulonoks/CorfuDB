@@ -1,11 +1,6 @@
 package org.corfudb.universe.node;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-import org.corfudb.runtime.view.Layout;
+import lombok.*;
 import org.corfudb.universe.universe.Universe;
 import org.slf4j.event.Level;
 
@@ -31,7 +26,7 @@ public interface CorfuServer extends Node {
         DISK, MEMORY
     }
 
-    @Builder
+    @Builder(builderMethodName = "serverParamsBuilder")
     @Getter
     @AllArgsConstructor
     @EqualsAndHashCode

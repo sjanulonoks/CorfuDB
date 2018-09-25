@@ -13,9 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static lombok.Builder.Default;
-import static org.corfudb.universe.node.CorfuServer.Mode;
-import static org.corfudb.universe.node.CorfuServer.Persistence;
-import static org.corfudb.universe.node.CorfuServer.ServerParams;
+import static org.corfudb.universe.node.CorfuServer.*;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 /**
@@ -33,7 +31,7 @@ public interface Fixtures {
 
         @Override
         public ServerParams data() {
-            return ServerParams.builder()
+            return ServerParams.serverParamsBuilder()
                     .mode(mode)
                     .logDir("/tmp/")
                     .logLevel(Level.TRACE)
@@ -75,11 +73,11 @@ public interface Fixtures {
 
     @Builder
     @Getter
-    class CorfuClusterFixture implements Fixture<GroupParams> {
+    class CorfuGroupFixture implements Fixture<GroupParams> {
         @Default
         private final MultipleServersFixture servers = MultipleServersFixture.builder().build();
         @Default
-        private final String groupName = "corfuCluster";
+        private final String groupName = "corfuServer";
 
         @Override
         public GroupParams data() {
@@ -98,12 +96,12 @@ public interface Fixtures {
     @Getter
     class UniverseFixture implements Fixture<UniverseParams> {
         @Default
-        private final CorfuClusterFixture group = CorfuClusterFixture.builder().build();
+        private final CorfuGroupFixture group = CorfuGroupFixture.builder().build();
 
         @Override
         public UniverseParams data() {
             GroupParams groupParams = group.data();
-            return UniverseParams.builder()
+            return UniverseParams.universeBuilder()
                     .build()
                     .add(groupParams);
         }

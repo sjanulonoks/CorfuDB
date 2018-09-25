@@ -102,12 +102,12 @@ public class LocalCorfuClient implements CorfuClient {
 
     @Override
     public void stop(Duration timeout) {
-        runtime.shutdown();
+        //Nothing to stop
     }
 
     @Override
     public void kill() {
-        runtime.shutdown();
+        //Nothing to kill
     }
 
     public ManagementView getManagementView() {

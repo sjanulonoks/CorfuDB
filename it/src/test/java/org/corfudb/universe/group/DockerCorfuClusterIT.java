@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.corfudb.universe.scenario.Scenario.with;
-import static org.corfudb.universe.scenario.fixture.Fixtures.CorfuClusterFixture;
+import static org.corfudb.universe.scenario.fixture.Fixtures.CorfuGroupFixture;
 import static org.corfudb.universe.scenario.fixture.Fixtures.MultipleServersFixture;
 import static org.corfudb.universe.scenario.fixture.Fixtures.UniverseFixture;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
@@ -75,7 +75,7 @@ public class DockerCorfuClusterIT {
     @Test
     public void corfuServerSingleGroupSingleNodeTest() {
         MultipleServersFixture serversFixture = MultipleServersFixture.builder().numNodes(1).build();
-        CorfuClusterFixture groupFixture = CorfuClusterFixture.builder().servers(serversFixture).build();
+        CorfuGroupFixture groupFixture = CorfuGroupFixture.builder().servers(serversFixture).build();
         UniverseFixture universeFixture = UniverseFixture.builder().group(groupFixture).build();
 
         universe = UNIVERSE_FACTORY
