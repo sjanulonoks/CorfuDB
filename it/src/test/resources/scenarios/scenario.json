@@ -1,0 +1,32 @@
+{
+  "scenario": [
+    {
+      "description": "should add node: 1",
+      "action": {
+        "type": "org.corfudb.universe.scenario.action.AddNodeAction",
+        "description": "add second corfu server into the cluster",
+        "groupName": "corfuCluster",
+        "mainServerName": "node9000",
+        "nodeName": "node9001"
+      },
+      "spec": {
+        "type": "org.corfudb.universe.scenario.spec.AddNodeSpec",
+        "clusterSize": 3
+      }
+    },
+    {
+      "description": "should add node: 2",
+      "action": {
+        "type": "org.corfudb.universe.scenario.action.AddNodeAction",
+        "description": "add third corfu server into the cluster",
+        "groupName": "corfuCluster",
+        "mainServerName": "node9000",
+        "nodeName": "node9002"
+      },
+      "spec": {
+        "type": "org.corfudb.universe.scenario.spec.AddNodeSpec",
+        "clusterSize": 3
+      }
+    }
+  ]
+}
