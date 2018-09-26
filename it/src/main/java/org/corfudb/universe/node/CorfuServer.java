@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
-import org.corfudb.runtime.view.Layout;
 import org.corfudb.universe.universe.Universe;
 import org.slf4j.event.Level;
 

@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  * Scenario executes all test cases and all tests included in test cases.
  *
  * @param <D> data provided by a fixture
- * @param <T>    fixture type
+ * @param <T> fixture type
  */
 public class Scenario<D, T extends Fixture<D>> {
     private final T fixture;
@@ -30,7 +30,7 @@ public class Scenario<D, T extends Fixture<D>> {
      * Create a new scenario based on a fixture
      *
      * @param fixture a scenario fixture
-     * @param <D>  data provided by the fixture
+     * @param <D>     data provided by the fixture
      * @param <T>     fixture type
      * @return new scenario with particular fixture
      */

@@ -33,6 +33,7 @@ public class ScenarioConfigParser {
 
     /**
      * Load scenarios from a directory
+     *
      * @param directory scenarios directory
      * @return list of scenarios
      * @throws URISyntaxException throws if scenario directory doesn't exists

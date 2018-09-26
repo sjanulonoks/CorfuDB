@@ -94,7 +94,7 @@ public interface Universe {
             return groupType.cast(groups.get(name));
         }
 
-        public UniverseParams add(GroupParams groupParams){
+        public UniverseParams add(GroupParams groupParams) {
             groups.put(groupParams.getName(), groupParams);
             return this;
         }

@@ -92,7 +92,7 @@ public class LocalCorfuClient implements CorfuClient {
         return runtime.getLayoutView().getLayout();
     }
 
-    public ObjectsView getObjectsView(){
+    public ObjectsView getObjectsView() {
         return runtime.getObjectsView();
     }
 

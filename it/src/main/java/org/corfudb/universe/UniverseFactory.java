@@ -28,7 +28,7 @@ public class UniverseFactory {
      * {@link DockerClient}.
      *
      * @param universeParams {@link Universe parameters
-     * @param docker        docker client.
+     * @param docker         docker client.
      * @return a instance of {@link DockerUniverse}
      */
     public DockerUniverse buildDockerUniverse(UniverseParams universeParams, DockerClient docker) {

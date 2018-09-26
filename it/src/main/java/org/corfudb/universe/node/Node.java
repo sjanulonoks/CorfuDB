@@ -40,6 +40,7 @@ public interface Node {
      */
     interface NodeParams {
         String getName();
+
         NodeType getNodeType();
     }
 

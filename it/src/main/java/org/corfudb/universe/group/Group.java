@@ -62,7 +62,9 @@ public interface Group {
 
     interface GroupParams {
         String getName();
+
         <T extends NodeParams> ImmutableList<T> getNodesParams();
+
         Node.NodeType getNodeType();
     }
 }
