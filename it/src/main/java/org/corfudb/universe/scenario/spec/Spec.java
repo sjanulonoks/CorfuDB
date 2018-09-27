@@ -6,7 +6,6 @@ import lombok.Data;
  * See: <a href="http://xunitpatterns.com/Goals%20of%20Test%20Automation.html#Tests%20as%20Specification">
  * Test specification
  * </a>
- *
  * @param <T> input data
  * @param <R> action result
  */

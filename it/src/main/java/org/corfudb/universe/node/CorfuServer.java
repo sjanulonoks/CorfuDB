@@ -1,14 +1,8 @@
 package org.corfudb.universe.node;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 import org.corfudb.universe.universe.Universe;
 import org.slf4j.event.Level;
-
-import java.time.Duration;
 
 import static lombok.EqualsAndHashCode.Exclude;
 
@@ -21,6 +15,41 @@ public interface CorfuServer extends Node {
     CorfuServer deploy();
 
     ServerParams getParams();
+
+    /**
+     * Disconnect a CorfuServer from the network
+     *
+     * @throws NodeException thrown in case of unsuccessful disconnect.
+     */
+    void disconnect();
+
+    /**
+     * Pause a CorfuServer
+     *
+     * @throws NodeException thrown in case of unsuccessful resume.
+     */
+    void pause();
+
+    /**
+     * Restart a {@link CorfuServer}
+     *
+     * @throws NodeException this exception will be thrown if the node can not be restarted
+     */
+    void restart();
+
+    /**
+     * Reconnect a {@link CorfuServer} to the network
+     *
+     * @throws NodeException this exception will be thrown if the node can not be reconnected
+     */
+    void reconnect();
+
+    /**
+     * Resume a {@link CorfuServer}
+     *
+     * @throws NodeException this exception will be thrown if the node can not be unpaused
+     */
+    void resume();
 
     enum Mode {
         SINGLE, CLUSTER
@@ -37,19 +66,12 @@ public interface CorfuServer extends Node {
     @ToString
     class ServerParams implements NodeParams {
         @Exclude
-        private final String logDir;
+        private final String streamLogDir;
         private final int port;
         private final Mode mode;
         private final Persistence persistence;
         @Exclude
         private final Level logLevel;
-
-        @Exclude
-        private final int workflowNumRetry;
-        @Exclude
-        private final Duration timeout;
-        @Exclude
-        private final Duration pollPeriod;
         private final NodeType nodeType = NodeType.CORFU_SERVER;
 
         public String getName() {

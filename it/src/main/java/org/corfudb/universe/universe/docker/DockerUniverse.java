@@ -77,36 +77,14 @@ public class DockerUniverse implements Universe {
     public void shutdown() {
         log.info("Shutdown docker universe: {}", clusterId);
 
-        // gracefully stop all groups
-        groups.values().forEach(group -> {
-            try {
-                group.stop(universeParams.getTimeout());
-            } catch (Exception ex) {
-                log.info("Can't stop group: {}", group.getParams().getName());
-            }
-        });
-
         // Kill all docker containers
-        universeParams.getGroups().keySet().forEach(groupName -> {
-            GroupParams groupParams = universeParams.getGroupParams(groupName, GroupParams.class);
+        groups.values().forEach(Group::destroy);
 
-            groupParams.getNodesParams().forEach(serverParams -> {
-                try {
-                    docker.killContainer(serverParams.getName());
-                } catch (Exception e) {
-                    log.debug(
-                            "Can't kill container. In general it should be killed already. Container: {}",
-                            serverParams.getName()
-                    );
-                }
-            });
-
-        });
-
+        // Remove docker network
         try {
             network.shutdown();
         } catch (UniverseException e) {
-            log.debug("Can't stop docker network. Network name: {}", universeParams.getNetworkName());
+            log.debug("Can't remove docker network: {}", universeParams.getNetworkName());
         }
     }
 
@@ -152,9 +130,8 @@ public class DockerUniverse implements Universe {
                         .docker(docker)
                         .build();
 
-                cluster.deploy();
-
                 groups.put(groupParams.getName(), cluster);
+                cluster.deploy();
                 break;
             case CORFU_CLIENT:
                 throw new UniverseException("Not implemented corfu client. Group config: " + groupParams);

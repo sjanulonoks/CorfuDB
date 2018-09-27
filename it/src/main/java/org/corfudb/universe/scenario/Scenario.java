@@ -27,7 +27,7 @@ public class Scenario<D, T extends Fixture<D>> {
     }
 
     /**
-     * Create a new scenario based on a fixture
+     * Create a new scenario base on a fixture
      *
      * @param fixture a scenario fixture
      * @param <D>     data provided by the fixture

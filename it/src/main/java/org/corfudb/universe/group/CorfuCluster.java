@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.corfudb.universe.node.Node;
+import org.corfudb.universe.node.LocalCorfuClient;
+import org.corfudb.universe.node.Node.NodeType;
 import org.corfudb.universe.util.ClassUtils;
 
 import java.time.Duration;
@@ -17,6 +18,8 @@ import static org.corfudb.universe.node.CorfuServer.ServerParams;
 
 public interface CorfuCluster extends Cluster {
 
+    LocalCorfuClient getLocalCorfuClient(ImmutableList<String> layoutServers);
+
     @Builder
     @EqualsAndHashCode
     class CorfuClusterParams implements GroupParams {
@@ -25,23 +28,25 @@ public interface CorfuCluster extends Cluster {
         @Default
         private final List<ServerParams> nodes = new ArrayList<>();
         @Getter
-        private Node.NodeType nodeType;
+        private NodeType nodeType;
         @Default
         @Getter
         private final int bootStrapRetries = 3;
         @Default
         @Getter
-        private final Duration retryTimeout = Duration.ofSeconds(1);
+        private final Duration retryTimeout = Duration.ofSeconds(10);
 
         @Override
         public ImmutableList<ServerParams> getNodesParams() {
             return ImmutableList.copyOf(nodes);
         }
 
-        public List<String> getServers() {
-            return nodes.stream()
+        public ImmutableList<String> getServers() {
+            List<String> servers = nodes.stream()
                     .map(ServerParams::getEndpoint)
                     .collect(Collectors.toList());
+
+            return ImmutableList.copyOf(servers);
         }
 
         public synchronized CorfuClusterParams add(ServerParams nodeParams) {

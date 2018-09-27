@@ -42,6 +42,11 @@ public interface Group {
      */
     void kill();
 
+    /**
+     * Destroy the {@link Group} immediately by destroying all the {@link Node}-s of the group.
+     */
+    void destroy();
+
     Node add(NodeParams nodeParams);
 
     /**
@@ -62,9 +67,7 @@ public interface Group {
 
     interface GroupParams {
         String getName();
-
         <T extends NodeParams> ImmutableList<T> getNodesParams();
-
         Node.NodeType getNodeType();
     }
 }

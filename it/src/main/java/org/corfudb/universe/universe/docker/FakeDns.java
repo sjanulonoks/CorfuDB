@@ -3,11 +3,7 @@ package org.corfudb.universe.universe.docker;
 import com.google.common.base.Throwables;
 import com.google.common.net.InetAddresses;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.corfudb.universe.group.CorfuCluster.CorfuClusterParams;
 import org.corfudb.universe.group.Group.GroupParams;
+import org.corfudb.universe.node.CorfuClient.ClientParams;
 import org.corfudb.universe.node.Node;
 import org.slf4j.event.Level;
 
@@ -13,9 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static lombok.Builder.Default;
-import static org.corfudb.universe.node.CorfuServer.Mode;
-import static org.corfudb.universe.node.CorfuServer.Persistence;
-import static org.corfudb.universe.node.CorfuServer.ServerParams;
+import static org.corfudb.universe.node.CorfuServer.*;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 /**
@@ -23,25 +22,55 @@ import static org.corfudb.universe.universe.Universe.UniverseParams;
  */
 public interface Fixtures {
 
+    class TestFixtureConst {
+
+        public static final int DEFAULT_TIMEOUT = 30;
+
+        public static final int DEFAULT_TIMEOUT_MEDIUM = 60;
+
+        public static final int DEFAULT_TIMEOUT_LONG = 100;
+
+        public static final String DEFAULT_STREAM_NAME = "stream";
+
+        public static final int DEFAULT_TABLE_ITER = 100;
+    }
+
+    @Builder
+    @Getter
+    class CorfuClientFixture implements Fixture<ClientParams> {
+        @Default
+        private final int numRetry = 5;
+        @Default
+        private final Duration timeout = Duration.ofSeconds(30);
+        @Default
+        private final Duration pollPeriod = Duration.ofMillis(50);
+
+        @Override
+        public ClientParams data() {
+            return ClientParams.builder()
+                    .numRetry(numRetry)
+                    .timeout(timeout)
+                    .pollPeriod(pollPeriod)
+                    .build();
+        }
+    }
+
     @Builder
     @Getter
     class SingleServerFixture implements Fixture<ServerParams> {
         @Default
         private final int port = 9000;
         @Default
-        private final Mode mode = Mode.SINGLE;
+        private final Mode mode = Mode.CLUSTER;
 
         @Override
         public ServerParams data() {
             return ServerParams.builder()
                     .mode(mode)
-                    .logDir("/tmp/")
+                    .streamLogDir("/tmp/")
                     .logLevel(Level.TRACE)
-                    .persistence(Persistence.MEMORY)
+                    .persistence(Persistence.DISK)
                     .port(port)
-                    .timeout(Duration.ofMinutes(5))
-                    .pollPeriod(Duration.ofMillis(50))
-                    .workflowNumRetry(3)
                     .build();
         }
     }
@@ -75,9 +104,11 @@ public interface Fixtures {
 
     @Builder
     @Getter
-    class CorfuClusterFixture implements Fixture<GroupParams> {
+    class CorfuGroupFixture implements Fixture<GroupParams> {
         @Default
         private final MultipleServersFixture servers = MultipleServersFixture.builder().build();
+        @Default
+        private final CorfuClientFixture client = CorfuClientFixture.builder().build();
         @Default
         private final String groupName = "corfuCluster";
 
@@ -98,7 +129,7 @@ public interface Fixtures {
     @Getter
     class UniverseFixture implements Fixture<UniverseParams> {
         @Default
-        private final CorfuClusterFixture group = CorfuClusterFixture.builder().build();
+        private final CorfuGroupFixture group = CorfuGroupFixture.builder().build();
 
         @Override
         public UniverseParams data() {

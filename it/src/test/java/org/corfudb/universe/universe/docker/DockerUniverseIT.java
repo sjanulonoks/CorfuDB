@@ -5,7 +5,7 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.messages.ContainerInfo;
 import org.corfudb.universe.UniverseFactory;
 import org.corfudb.universe.group.CorfuCluster.CorfuClusterParams;
-import org.corfudb.universe.scenario.fixture.Fixtures.CorfuClusterFixture;
+import org.corfudb.universe.scenario.fixture.Fixtures.CorfuGroupFixture;
 import org.corfudb.universe.scenario.fixture.Fixtures.MultipleServersFixture;
 import org.corfudb.universe.scenario.fixture.Fixtures.UniverseFixture;
 import org.junit.After;
@@ -20,7 +20,7 @@ public class DockerUniverseIT {
     private static final UniverseFactory UNIVERSE_FACTORY = UniverseFactory.getInstance();
 
     private final DockerClient docker;
-    private DockerUniverse dockerCluster;
+    private DockerUniverse dockerUniverse;
 
     public DockerUniverseIT() throws Exception {
         this.docker = DefaultDockerClient.fromEnv().build();
@@ -31,22 +31,23 @@ public class DockerUniverseIT {
      */
     @After
     public void tearDown() {
-        dockerCluster.shutdown();
+        if (dockerUniverse != null) {
+            dockerUniverse.shutdown();
+        }
     }
 
     /**
      * Deploy a single service then deploy a single corfu server and add the server into the service
-     *
      * @throws Exception an error
      */
     @Test
     public void deploySingleGroupSingleNodeTest() throws Exception {
         MultipleServersFixture serversFixture = MultipleServersFixture.builder().numNodes(1).build();
-        CorfuClusterFixture groupFixture = CorfuClusterFixture.builder().servers(serversFixture).build();
+        CorfuGroupFixture groupFixture = CorfuGroupFixture.builder().servers(serversFixture).build();
         UniverseFixture universeFixture = UniverseFixture.builder().group(groupFixture).build();
 
         UniverseParams universeParams = universeFixture.data();
-        dockerCluster = UNIVERSE_FACTORY
+        dockerUniverse = UNIVERSE_FACTORY
                 .buildDockerUniverse(universeParams, docker)
                 .deploy();
 
@@ -72,7 +73,7 @@ public class DockerUniverseIT {
 
         //setup
         final UniverseParams universeParams = universeFixture.data();
-        dockerCluster = UNIVERSE_FACTORY
+        dockerUniverse = UNIVERSE_FACTORY
                 .buildDockerUniverse(universeParams, docker)
                 .deploy();
 

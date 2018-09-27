@@ -33,6 +33,13 @@ public interface Node {
      */
     void kill();
 
+    /**
+     * Destroy a {@link Node} completely.
+     *
+     * @throws NodeException thrown in case of unsuccessful destroy.
+     */
+    void destroy();
+
     NodeParams getParams();
 
     /**
@@ -40,7 +47,6 @@ public interface Node {
      */
     interface NodeParams {
         String getName();
-
         NodeType getNodeType();
     }
 

@@ -1,12 +1,10 @@
 package org.corfudb.universe.node.docker;
 
 import com.spotify.docker.client.DockerClient;
+import com.spotify.docker.client.DockerClient.ExecCreateParam;
+import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.ContainerConfig;
-import com.spotify.docker.client.messages.ContainerCreation;
-import com.spotify.docker.client.messages.ContainerInfo;
-import com.spotify.docker.client.messages.HostConfig;
-import com.spotify.docker.client.messages.PortBinding;
+import com.spotify.docker.client.messages.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,17 +13,18 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.corfudb.universe.node.CorfuServer;
+import org.corfudb.universe.node.Node;
 import org.corfudb.universe.node.NodeException;
 import org.corfudb.universe.universe.UniverseException;
 
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.spotify.docker.client.DockerClient.LogsParam;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 /**
@@ -41,13 +40,14 @@ public class CorfuServerDockerized implements CorfuServer {
     private final ServerParams params;
     private final DockerClient docker;
     private final UniverseParams universeParams;
+    private final File serverLogDir;
 
     /**
      * Deploys a Corfu server / docker container
      */
     @Override
     public CorfuServerDockerized deploy() {
-        log.info("Deploying the Corfu server. {}", params.getName());
+        log.info("Deploying the Corfu server. Docker container: {}", params.getName());
 
         deployContainer();
 
@@ -62,17 +62,16 @@ public class CorfuServerDockerized implements CorfuServer {
      */
     @Override
     public void stop(Duration timeout) {
-        log.info("Stopping the Corfu server. {}", params.getName());
+        log.info("Stopping the Corfu server. Docker container: {}", params.getName());
 
         try {
             ContainerInfo container = docker.inspectContainer(params.getName());
-            if (!container.state().running()) {
-                log.debug("The container `{}` is already stopped", container.name());
+            if (!container.state().running() && !container.state().paused()) {
+                log.warn("The container `{}` is already stopped", container.name());
                 return;
             }
             docker.stopContainer(params.getName(), (int) timeout.getSeconds());
         } catch (DockerException | InterruptedException e) {
-            Thread.currentThread().interrupt();
             throw new NodeException("Can't stop Corfu server", e);
         }
     }
@@ -84,18 +83,149 @@ public class CorfuServerDockerized implements CorfuServer {
      */
     @Override
     public void kill() {
-        log.info("Killing the Corfu server. {}", params.getName());
+        log.info("Killing the Corfu server. Docker container: {}", params.getName());
 
         try {
             ContainerInfo container = docker.inspectContainer(params.getName());
-            if (!container.state().running()) {
-                log.debug("The container `{}` is not running", container.name());
+            if (!container.state().running() && !container.state().paused()) {
+                log.warn("The container `{}` is not running", container.name());
                 return;
             }
             docker.killContainer(params.getName());
         } catch (DockerException | InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new NodeException("Can't kill Corfu server " + params.getName(), ex);
+            throw new NodeException("Can't kill Corfu server: " + params.getName());
+        }
+    }
+
+    /**
+     * Immediately kill and  remove the docker container
+     *
+     * @throws NodeException this exception will be thrown if the server can not be killed.
+     */
+    @Override
+    public void destroy() {
+        log.info("Destroying the Corfu server. Docker container: {}", params.getName());
+
+        try {
+            kill();
+        } catch (NodeException ex) {
+            log.warn("Can't kill container: {}", params.getName());
+        }
+
+        collectLogs();
+
+        try {
+            docker.removeContainer(params.getName());
+        } catch (DockerException | InterruptedException ex) {
+            throw new NodeException("Can't destroy Corfu server: " + params.getName());
+        }
+    }
+
+    /**
+     * Disconnect the container from docker network
+     *
+     * @throws NodeException this exception will be thrown if the server can not be disconnected
+     */
+    @Override
+    public void disconnect() {
+        log.info("Disconnecting the server from docker network. Docker container: {}", params.getName());
+
+        try {
+            String networkName = universeParams.getNetworkName();
+            IpamConfig ipamConfig = docker.inspectNetwork(networkName).ipam().config().get(0);
+            String subnet = ipamConfig.subnet();
+            String gateway = ipamConfig.gateway();
+
+            // iptables -A INPUT -s $gateway -j ACCEPT
+            execCommand("iptables", "-A", "INPUT", "-s", gateway, "-j", "ACCEPT");
+            // iptables -A INPUT -s $subnet -j DROP
+            execCommand("iptables", "-A", "INPUT", "-s", subnet, "-j", "DROP");
+            // iptables -A OUTPUT -s $gateway -j ACCEPT
+            execCommand("iptables", "-A", "OUTPUT", "-d", gateway, "-j", "ACCEPT");
+            // iptables -A OUTPUT -s $subnet -j DROP
+            execCommand("iptables", "-A", "OUTPUT", "-d", subnet, "-j", "DROP");
+        } catch (DockerException | InterruptedException ex) {
+            throw new NodeException("Can't disconnect container from docker network " + params.getName());
+        }
+    }
+
+    /**
+     * Pause the container from docker network
+     *
+     * @throws NodeException this exception will be thrown if the server can not be paused
+     */
+    @Override
+    public void pause() {
+        log.info("Pausing the Corfu server: {}", params.getName());
+
+        try {
+            ContainerInfo container = docker.inspectContainer(params.getName());
+            if (!container.state().running()) {
+                log.warn("The container `{}` is not running", container.name());
+                return;
+            }
+            docker.pauseContainer(params.getName());
+        } catch (DockerException | InterruptedException ex) {
+            throw new NodeException("Can't pause container " + params.getName());
+        }
+    }
+
+    /**
+     * Restart a {@link Node}
+     *
+     * @throws NodeException this exception will be thrown if the server can not be restarted
+     */
+    @Override
+    public void restart() {
+        log.info("Restarting the corfu server: {}", params.getName());
+
+        try {
+            ContainerInfo container = docker.inspectContainer(params.getName());
+            if (container.state().running() || container.state().paused()) {
+                log.warn("The container `{}` already running, should stop before restart", container.name());
+                return;
+            }
+            docker.restartContainer(params.getName());
+        } catch (DockerException | InterruptedException ex) {
+            throw new NodeException("Can't restart container " + params.getName(), ex);
+        }
+    }
+
+    /**
+     * Reconnect a {@link Node} to the network
+     *
+     * @throws NodeException this exception will be thrown if the node can not be reconnected
+     */
+    @Override
+    public void reconnect() {
+        log.info("Reconnecting the corfu server to the network. Docker container: {}", params.getName());
+
+        try {
+            execCommand("iptables", "-F", "INPUT");
+            execCommand("iptables", "-F", "OUTPUT");
+        } catch (DockerException | InterruptedException e) {
+            throw new NodeException("Can't reconnect container to docker network " + params.getName());
+        }
+    }
+
+    /**
+     * Resume a {@link CorfuServer}
+     *
+     * @throws NodeException this exception will be thrown if the node can not be resumed
+     */
+    @Override
+    public void resume() {
+        log.info("Resuming the corfu server: {}", params.getName());
+
+        try {
+            ContainerInfo container = docker.inspectContainer(params.getName());
+            if (!container.state().paused()) {
+                log.warn("The container `{}` is not paused, should pause before resuming", container.name());
+                return;
+            }
+            docker.unpauseContainer(params.getName());
+        } catch (DockerException | InterruptedException ex) {
+            throw new NodeException("Can't resume container " + params.getName(), ex);
         }
     }
 
@@ -112,13 +242,11 @@ public class CorfuServerDockerized implements CorfuServer {
             ContainerCreation container = docker.createContainer(containerConfig, params.getName());
             id = container.id();
 
-            addShutdownHook();
-
+            docker.disconnectFromNetwork(id, "bridge");
             docker.connectToNetwork(id, docker.inspectNetwork(universeParams.getNetworkName()).id());
 
             docker.startContainer(id);
         } catch (InterruptedException | DockerException e) {
-            Thread.currentThread().interrupt();
             throw new NodeException("Can't start a container", e);
         }
 
@@ -136,8 +264,8 @@ public class CorfuServerDockerized implements CorfuServer {
         }
 
         HostConfig hostConfig = HostConfig.builder()
+                .privileged(true)
                 .portBindings(portBindings)
-                .autoRemove(true)
                 .build();
 
         // Compose command line for starting Corfu
@@ -153,17 +281,6 @@ public class CorfuServerDockerized implements CorfuServer {
                 .exposedPorts(ports)
                 .cmd("sh", "-c", cmdLine)
                 .build();
-    }
-
-    private void addShutdownHook() {
-        // Just in case a test failed and didn't kill the container
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                kill();
-            } catch (Exception e) {
-                log.debug("Corfu server shutdown hook. Can't kill container: {}", params.getName());
-            }
-        }));
     }
 
     private static String getAppVersion() {
@@ -184,14 +301,14 @@ public class CorfuServerDockerized implements CorfuServer {
      */
     private String getCommandLineParams() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("-a ").append(ALL_NETWORK_INTERFACES);
+        cmd.append("-a ").append(params.getName());
 
         switch (params.getPersistence()) {
             case DISK:
-                if (StringUtils.isEmpty(params.getLogDir())) {
+                if (StringUtils.isEmpty(params.getStreamLogDir())) {
                     throw new UniverseException("Invalid log dir in disk persistence mode");
                 }
-                cmd.append(" -l ").append(params.getLogDir());
+                cmd.append(" -l ").append(params.getStreamLogDir());
                 break;
             case MEMORY:
                 cmd.append(" -m");
@@ -210,5 +327,35 @@ public class CorfuServerDockerized implements CorfuServer {
         log.trace("Command line parameters: {}", cmdLineParams);
 
         return cmdLineParams;
+    }
+
+    /**
+     * Run `docker exec` on a container
+     */
+    private void execCommand(String... command) throws DockerException, InterruptedException {
+        log.info("Executing docker command: {}", String.join(" ", command));
+
+        ExecCreation execCreation = docker.execCreate(
+                params.getName(),
+                command,
+                ExecCreateParam.attachStdout(),
+                ExecCreateParam.attachStderr()
+        );
+
+        log.info("docker exec result: {}", docker.execStart(execCreation.id()).readFully());
+    }
+
+    /**
+     * Collect logs from container and write to the log directory
+     */
+    private void collectLogs() {
+        try (LogStream stream = docker.logs(params.getName(), LogsParam.stdout(), LogsParam.stderr())) {
+            String logs = stream.readFully();
+            File logFile = new File(serverLogDir, params.getName() + ".log");
+            BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
+            writer.write(logs);
+        } catch (DockerException | InterruptedException | IOException e) {
+            log.error("Can't collect logs from container: {}", params.getName());
+        }
     }
 }

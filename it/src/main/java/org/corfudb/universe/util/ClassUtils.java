@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class ClassUtils {
 
-    private ClassUtils() {
+    private ClassUtils(){
         //prevent creating class util instances
     }
 
