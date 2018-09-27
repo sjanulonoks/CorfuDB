@@ -35,7 +35,7 @@ public abstract class AbstractCorfuServer<T extends ServerParams, U extends Univ
      */
     protected String getCommandLineParams() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append("-a ").append(ALL_NETWORK_INTERFACES);
+        cmd.append("-a ").append(params.getName());
 
         switch (params.getPersistence()) {
             case DISK:
