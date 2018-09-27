@@ -1,6 +1,7 @@
 package org.corfudb.universe.universe;
 
 import com.google.common.collect.ImmutableMap;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -63,21 +64,18 @@ public interface Universe {
 
     <T extends Group> T getGroup(String groupName);
 
-    @Builder(toBuilder = true)
+    @Builder(toBuilder = true, builderMethodName = "universeBuilder")
+    @AllArgsConstructor
     @EqualsAndHashCode
     class UniverseParams {
         private static final int TIMEOUT_IN_SECONDS = 10;
         private static final String NETWORK_PREFIX = "CorfuNet-";
-        private static final String BASE_DIR = "/tmp/";
 
         @Getter
         @Default
         private final String networkName = NETWORK_PREFIX + UUID.randomUUID().toString();
         @Default
         private final ConcurrentMap<String, GroupParams> groups = new ConcurrentHashMap<>();
-        @Getter
-        @Default
-        private final String baseDir = BASE_DIR;
 
         /**
          * {@link Universe} timeout to wait until an action is completed.

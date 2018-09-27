@@ -65,7 +65,7 @@ public interface Fixtures {
 
         @Override
         public ServerParams data() {
-            return ServerParams.builder()
+            return ServerParams.serverParamsBuilder()
                     .mode(mode)
                     .streamLogDir("/tmp/")
                     .logLevel(Level.TRACE)
@@ -134,7 +134,7 @@ public interface Fixtures {
         @Override
         public UniverseParams data() {
             GroupParams groupParams = group.data();
-            return UniverseParams.builder()
+            return UniverseParams.universeBuilder()
                     .build()
                     .add(groupParams);
         }

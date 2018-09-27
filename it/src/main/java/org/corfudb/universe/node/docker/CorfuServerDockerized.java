@@ -4,20 +4,25 @@ import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerClient.ExecCreateParam;
 import com.spotify.docker.client.LogStream;
 import com.spotify.docker.client.exceptions.DockerException;
-import com.spotify.docker.client.messages.*;
+import com.spotify.docker.client.messages.ContainerConfig;
+import com.spotify.docker.client.messages.ContainerCreation;
+import com.spotify.docker.client.messages.ContainerInfo;
+import com.spotify.docker.client.messages.ExecCreation;
+import com.spotify.docker.client.messages.HostConfig;
+import com.spotify.docker.client.messages.IpamConfig;
+import com.spotify.docker.client.messages.PortBinding;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.corfudb.universe.node.AbstractCorfuServer;
 import org.corfudb.universe.node.CorfuServer;
+import org.corfudb.universe.node.CorfuServer.ServerParams;
 import org.corfudb.universe.node.Node;
 import org.corfudb.universe.node.NodeException;
-import org.corfudb.universe.universe.UniverseException;
 
-import java.io.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,16 +36,17 @@ import static org.corfudb.universe.universe.Universe.UniverseParams;
  * Implements a docker instance representing a {@link CorfuServer}.
  */
 @Slf4j
-@Builder
-public class CorfuServerDockerized implements CorfuServer {
+public class CorfuServerDockerized extends AbstractCorfuServer<ServerParams> {
     private static final String IMAGE_NAME = "corfu-server:" + getAppVersion();
     public static final String ALL_NETWORK_INTERFACES = "0.0.0.0";
 
-    @Getter
-    private final ServerParams params;
     private final DockerClient docker;
-    private final UniverseParams universeParams;
-    private final File serverLogDir;
+
+    @Builder
+    public CorfuServerDockerized(DockerClient docker, ServerParams params, UniverseParams universeParams) {
+        super(params, universeParams);
+        this.docker = docker;
+    }
 
     /**
      * Deploys a Corfu server / docker container
@@ -283,52 +289,6 @@ public class CorfuServerDockerized implements CorfuServer {
                 .build();
     }
 
-    private static String getAppVersion() {
-        MavenXpp3Reader reader = new MavenXpp3Reader();
-        Model model;
-        try {
-            model = reader.read(new FileReader("pom.xml"));
-            return model.getParent().getVersion();
-        } catch (IOException | XmlPullParserException e) {
-            throw new NodeException("Can't parse application version", e);
-        }
-    }
-
-    /**
-     * This method create a command line string for starting Corfu server
-     *
-     * @return command line parameters
-     */
-    private String getCommandLineParams() {
-        StringBuilder cmd = new StringBuilder();
-        cmd.append("-a ").append(params.getName());
-
-        switch (params.getPersistence()) {
-            case DISK:
-                if (StringUtils.isEmpty(params.getStreamLogDir())) {
-                    throw new UniverseException("Invalid log dir in disk persistence mode");
-                }
-                cmd.append(" -l ").append(params.getStreamLogDir());
-                break;
-            case MEMORY:
-                cmd.append(" -m");
-                break;
-        }
-
-        if (params.getMode() == Mode.SINGLE) {
-            cmd.append(" -s");
-        }
-
-        cmd.append(" -d ").append(params.getLogLevel().toString()).append(" ");
-
-        cmd.append(params.getPort());
-
-        String cmdLineParams = cmd.toString();
-        log.trace("Command line parameters: {}", cmdLineParams);
-
-        return cmdLineParams;
-    }
-
     /**
      * Run `docker exec` on a container
      */
@@ -349,12 +309,14 @@ public class CorfuServerDockerized implements CorfuServer {
      * Collect logs from container and write to the log directory
      */
     private void collectLogs() {
+        log.debug("Collect logs for: {}", params.getName());
+
         try (LogStream stream = docker.logs(params.getName(), LogsParam.stdout(), LogsParam.stderr())) {
             String logs = stream.readFully();
-            File logFile = new File(serverLogDir, params.getName() + ".log");
-            BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
-            writer.write(logs);
-        } catch (DockerException | InterruptedException | IOException e) {
+
+            Path filePathObj = params.getServerLogDir().resolve(params.getName() + ".log");
+            Files.write(filePathObj, logs.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+        } catch (InterruptedException | DockerException | IOException e) {
             log.error("Can't collect logs from container: {}", params.getName());
         }
     }

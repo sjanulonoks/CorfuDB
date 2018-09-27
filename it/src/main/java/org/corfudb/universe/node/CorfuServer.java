@@ -1,8 +1,15 @@
 package org.corfudb.universe.node;
 
 import lombok.*;
+import lombok.Builder.Default;
 import org.corfudb.universe.universe.Universe;
 import org.slf4j.event.Level;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import static lombok.EqualsAndHashCode.Exclude;
 
@@ -59,12 +66,16 @@ public interface CorfuServer extends Node {
         DISK, MEMORY
     }
 
-    @Builder
+    @Builder(builderMethodName = "serverParamsBuilder")
     @Getter
     @AllArgsConstructor
     @EqualsAndHashCode
     @ToString
     class ServerParams implements NodeParams {
+        private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
+        private static final String CORFU_DB_PATH = "corfudb";
+        private static final String BASE_DIR = "/tmp/";
+
         @Exclude
         private final String streamLogDir;
         private final int port;
@@ -74,12 +85,21 @@ public interface CorfuServer extends Node {
         private final Level logLevel;
         private final NodeType nodeType = NodeType.CORFU_SERVER;
 
+        @Getter
+        @Default
+        private final String baseDir = BASE_DIR;
+
         public String getName() {
             return "node" + port;
         }
 
         public String getEndpoint() {
             return getName() + ":" + port;
+        }
+
+        public Path getServerLogDir(){
+            String clusterLogPath = getName() + "_" + LocalDateTime.now().format(DATE_FORMATTER);
+            return Paths.get(baseDir, CORFU_DB_PATH, clusterLogPath);
         }
     }
 }
