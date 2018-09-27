@@ -20,7 +20,9 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.corfudb.universe.group.CorfuCluster.CorfuClusterParams;
-import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.*;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_STREAM_NAME;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TABLE_ITER;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TIMEOUT;
 
 public class HandOfGodIT {
     private static final UniverseFactory UNIVERSE_FACTORY = UniverseFactory.getInstance();
@@ -41,7 +43,7 @@ public class HandOfGodIT {
 
     /**
      * Test cluster behavior after killing and force removing nodes
-     *
+     * <p>
      * 1) Deploy and bootstrap a three nodes cluster
      * 2) Kill two nodes
      * 3) Force remove the dead nodes (Hand of God)
@@ -59,7 +61,7 @@ public class HandOfGodIT {
 
         scenario.describe((fixture, testCase) -> {
             CorfuCluster corfuCluster = universe.getGroup(universeFixture.getGroup().getGroupName());
-            
+
             CorfuClusterParams corfuClusterParams = corfuCluster.getParams();
             LocalCorfuClient corfuClient = corfuCluster.getLocalCorfuClient(corfuClusterParams.getServers());
 

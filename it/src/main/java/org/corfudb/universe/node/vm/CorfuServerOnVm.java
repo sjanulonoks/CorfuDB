@@ -20,17 +20,17 @@ import static org.corfudb.universe.universe.vm.VmUniverse.VmUniverseParams;
  * Implements a {@link CorfuServer} instance that is running on VM.
  */
 @Slf4j
-public class CorfuServerOnVm extends AbstractCorfuServer<VmServerParams> {
+public class CorfuServerOnVm extends AbstractCorfuServer<VmServerParams, VmUniverseParams> {
+    private static final UnsupportedOperationException NOT_IMPLEMENTED =
+            new UnsupportedOperationException("Not implemented");
 
     private final VirtualMachine vm;
-    private final VmUniverseParams universeParams;
     private final String ipAddress;
 
     @Builder
     public CorfuServerOnVm(VmServerParams params, VirtualMachine vm, VmUniverseParams universeParams) {
-        super(params);
+        super(params, universeParams);
         this.vm = vm;
-        this.universeParams = universeParams;
         this.ipAddress = getIpAddress();
     }
 
@@ -60,6 +60,31 @@ public class CorfuServerOnVm extends AbstractCorfuServer<VmServerParams> {
         executeOnVm(cmdLine.toString());
 
         return this;
+    }
+
+    @Override
+    public void disconnect() {
+        throw NOT_IMPLEMENTED;
+    }
+
+    @Override
+    public void pause() {
+        throw NOT_IMPLEMENTED;
+    }
+
+    @Override
+    public void restart() {
+        throw NOT_IMPLEMENTED;
+    }
+
+    @Override
+    public void reconnect() {
+        throw NOT_IMPLEMENTED;
+    }
+
+    @Override
+    public void resume() {
+        throw NOT_IMPLEMENTED;
     }
 
     /**
@@ -111,5 +136,10 @@ public class CorfuServerOnVm extends AbstractCorfuServer<VmServerParams> {
     public void kill() {
         log.debug("Kill the corfu server. Params: {}", params);
         executeOnVm("pkill -f -9 corfudb");
+    }
+
+    @Override
+    public void destroy() {
+
     }
 }

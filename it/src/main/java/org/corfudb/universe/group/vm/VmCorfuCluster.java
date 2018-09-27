@@ -45,6 +45,7 @@ public class VmCorfuCluster extends AbstractCorfuCluster {
      * Deploys a VM {@link Group}, including the following steps:
      * a) Deploy the Corfu nodes on VMs
      * b) Bootstrap all the nodes to form a cluster
+     *
      * @return an instance of {@link Group}
      */
     @Override
@@ -73,6 +74,7 @@ public class VmCorfuCluster extends AbstractCorfuCluster {
 
     /**
      * Deploys a Corfu server node according to the provided parameter.
+     *
      * @return an instance of {@link Node}
      */
     @Override
@@ -103,7 +105,7 @@ public class VmCorfuCluster extends AbstractCorfuCluster {
 
         List<String> servers = params.getNodesParams()
                 .stream()
-                .map(params -> (VmServerParams) params)
+                .map(this::getVmServerParams)
                 .map(vmParams -> vms.get(vmParams.getVmName()).getGuest().getIpAddress() + ":" + vmParams.getPort())
                 .collect(Collectors.toList());
 

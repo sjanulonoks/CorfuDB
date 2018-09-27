@@ -1,6 +1,5 @@
 package org.corfudb.universe.group.docker;
 
-import com.google.common.collect.ImmutableList;
 import com.spotify.docker.client.DockerClient;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +8,6 @@ import org.corfudb.runtime.view.Layout;
 import org.corfudb.universe.group.AbstractCorfuCluster;
 import org.corfudb.universe.group.Group;
 import org.corfudb.universe.node.CorfuServer;
-import org.corfudb.universe.node.LocalCorfuClient;
 import org.corfudb.universe.node.Node;
 import org.corfudb.universe.node.docker.CorfuServerDockerized;
 
@@ -82,13 +80,5 @@ public class DockerCorfuCluster extends AbstractCorfuCluster {
                 Collections.singletonList(new Layout.LayoutStripe(params.getServers()))
         );
         return new Layout(servers, servers, Collections.singletonList(segment), epoch, clusterId);
-    }
-
-    @Override
-    public LocalCorfuClient getLocalCorfuClient(ImmutableList<String> layoutServers) {
-        return LocalCorfuClient.builder()
-                .serverEndpoints(layoutServers)
-                .build()
-                .deploy();
     }
 }

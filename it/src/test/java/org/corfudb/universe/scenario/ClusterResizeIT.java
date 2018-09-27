@@ -16,7 +16,9 @@ import org.junit.Test;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.corfudb.universe.scenario.fixture.Fixtures.*;
+import static org.corfudb.universe.scenario.fixture.Fixtures.CorfuClientFixture;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst;
+import static org.corfudb.universe.scenario.fixture.Fixtures.UniverseFixture;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 public class ClusterResizeIT {

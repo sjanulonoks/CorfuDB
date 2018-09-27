@@ -21,7 +21,9 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.corfudb.runtime.view.ClusterStatusReport.ClusterStatus;
-import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.*;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_STREAM_NAME;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TABLE_ITER;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TIMEOUT_MEDIUM;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 public class OneNodePausedIT {
@@ -43,7 +45,7 @@ public class OneNodePausedIT {
 
     /**
      * Test cluster behavior after one node paused
-     *
+     * <p>
      * 1) Deploy and bootstrap a three nodes cluster
      * 2) Pause one node (hang the jvm process)
      * 3) Verify layout, cluster status and data path

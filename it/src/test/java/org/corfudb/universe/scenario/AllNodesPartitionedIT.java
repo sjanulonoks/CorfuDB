@@ -44,10 +44,10 @@ public class AllNodesPartitionedIT {
 
     /**
      * Test cluster behavior after all nodes are partitioned symmetrically
-     *
+     * <p>
      * 1) Deploy and bootstrap a three nodes cluster
      * 2) Symmetrically partition all nodes so that they can't communicate
-     *    to any other node in cluster and vice versa
+     * to any other node in cluster and vice versa
      * 3) Verify layout, cluster status and data path
      * 4) Recover cluster by reconnecting the partitioned node
      * 5) Verify layout, cluster status and data path again

@@ -21,7 +21,9 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.corfudb.runtime.view.ClusterStatusReport.ClusterStatus;
-import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.*;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_STREAM_NAME;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TABLE_ITER;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TIMEOUT;
 
 public class NodesDownAndPartitionedIT {
     private static final UniverseFactory UNIVERSE_FACTORY = UniverseFactory.getInstance();
@@ -42,7 +44,7 @@ public class NodesDownAndPartitionedIT {
 
     /**
      * Test cluster behavior after one down and another node partitioned
-     *
+     * <p>
      * 1) Deploy and bootstrap a three nodes cluster
      * 2) Stop one node
      * 3) Symmetrically partition one node
@@ -61,7 +63,7 @@ public class NodesDownAndPartitionedIT {
 
         scenario.describe((fixture, testCase) -> {
             CorfuCluster corfuCluster = universe.getGroup(universeFixture.getGroup().getGroupName());
-            
+
             CorfuCluster.CorfuClusterParams corfuClusterParams = corfuCluster.getParams();
             LocalCorfuClient corfuClient = corfuCluster.getLocalCorfuClient(corfuClusterParams.getServers());
 

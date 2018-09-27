@@ -8,18 +8,20 @@ import org.corfudb.universe.universe.vm.VmUniverse.VmUniverseParams;
 import org.junit.Test;
 import org.slf4j.event.Level;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.corfudb.universe.group.Group.GroupParams;
-import static org.corfudb.universe.node.CorfuServer.*;
+import static org.corfudb.universe.node.CorfuServer.Mode;
+import static org.corfudb.universe.node.CorfuServer.NodeType;
+import static org.corfudb.universe.node.CorfuServer.Persistence;
 
 public class VmUniverseIT {
 
     /**
      * Conducts a basic test that deploys a VM {@link Universe} then shutdown.
+     *
      * @throws Exception an error
      */
     @Test
@@ -38,9 +40,6 @@ public class VmUniverseIT {
                 .logLevel(Level.TRACE)
                 .persistence(Persistence.DISK)
                 .port(port)
-                .timeout(Duration.ofMinutes(5))
-                .pollPeriod(Duration.ofMillis(50))
-                .workflowNumRetry(3)
                 .vmName("corfu-vm-1")
                 .build();
 
@@ -50,9 +49,6 @@ public class VmUniverseIT {
                 .logLevel(Level.TRACE)
                 .persistence(Persistence.DISK)
                 .port(port)
-                .timeout(Duration.ofMinutes(5))
-                .pollPeriod(Duration.ofMillis(50))
-                .workflowNumRetry(3)
                 .vmName("corfu-vm-2")
                 .build();
 
@@ -62,9 +58,6 @@ public class VmUniverseIT {
                 .logLevel(Level.TRACE)
                 .persistence(Persistence.DISK)
                 .port(port)
-                .timeout(Duration.ofMinutes(5))
-                .pollPeriod(Duration.ofMillis(50))
-                .workflowNumRetry(3)
                 .vmName("corfu-vm-3")
                 .build();
 

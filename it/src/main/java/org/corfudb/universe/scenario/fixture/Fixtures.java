@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static lombok.Builder.Default;
-import static org.corfudb.universe.node.CorfuServer.*;
+import static org.corfudb.universe.node.CorfuServer.Mode;
+import static org.corfudb.universe.node.CorfuServer.Persistence;
+import static org.corfudb.universe.node.CorfuServer.ServerParams;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 /**

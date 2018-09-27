@@ -36,9 +36,9 @@ import static org.corfudb.universe.universe.Universe.UniverseParams;
  * Implements a docker instance representing a {@link CorfuServer}.
  */
 @Slf4j
-public class CorfuServerDockerized extends AbstractCorfuServer<ServerParams> {
+public class CorfuServerDockerized extends AbstractCorfuServer<ServerParams, UniverseParams> {
     private static final String IMAGE_NAME = "corfu-server:" + getAppVersion();
-    public static final String ALL_NETWORK_INTERFACES = "0.0.0.0";
+    private static final String ALL_NETWORK_INTERFACES = "0.0.0.0";
 
     private final DockerClient docker;
 

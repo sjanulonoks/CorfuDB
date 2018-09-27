@@ -42,7 +42,7 @@ public class NodesPausedAndPartitionedIT {
 
     /**
      * Test cluster behavior after one paused and another node partitioned
-     *
+     * <p>
      * 1) Deploy and bootstrap a three nodes cluster
      * 2) Pause one node
      * 3) Symmetrically partition one node

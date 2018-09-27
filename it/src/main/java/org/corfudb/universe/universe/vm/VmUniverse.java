@@ -1,8 +1,22 @@
 package org.corfudb.universe.universe.vm;
 
 import com.google.common.collect.ImmutableMap;
-import com.vmware.vim25.*;
-import com.vmware.vim25.mo.*;
+import com.vmware.vim25.CustomizationAdapterMapping;
+import com.vmware.vim25.CustomizationDhcpIpGenerator;
+import com.vmware.vim25.CustomizationFixedName;
+import com.vmware.vim25.CustomizationGlobalIPSettings;
+import com.vmware.vim25.CustomizationIPSettings;
+import com.vmware.vim25.CustomizationLinuxOptions;
+import com.vmware.vim25.CustomizationLinuxPrep;
+import com.vmware.vim25.CustomizationSpec;
+import com.vmware.vim25.GuestInfo;
+import com.vmware.vim25.VirtualMachineCloneSpec;
+import com.vmware.vim25.VirtualMachineRelocateSpec;
+import com.vmware.vim25.mo.Folder;
+import com.vmware.vim25.mo.InventoryNavigator;
+import com.vmware.vim25.mo.ServiceInstance;
+import com.vmware.vim25.mo.Task;
+import com.vmware.vim25.mo.VirtualMachine;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -22,7 +36,12 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**

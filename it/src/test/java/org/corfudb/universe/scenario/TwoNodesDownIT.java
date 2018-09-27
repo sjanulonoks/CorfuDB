@@ -21,7 +21,9 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.corfudb.runtime.view.ClusterStatusReport.ClusterStatus;
 import static org.corfudb.runtime.view.ClusterStatusReport.NodeStatus;
-import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.*;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_STREAM_NAME;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TABLE_ITER;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TIMEOUT;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 public class TwoNodesDownIT {
@@ -43,7 +45,7 @@ public class TwoNodesDownIT {
 
     /**
      * Test cluster behavior after one two nodes down
-     *
+     * <p>
      * 1) Deploy and bootstrap a three nodes cluster
      * 2) Sequentially stop two nodes
      * 3) Verify layout, cluster status and data path

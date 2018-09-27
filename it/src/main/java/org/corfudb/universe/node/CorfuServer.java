@@ -1,11 +1,14 @@
 package org.corfudb.universe.node;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Builder.Default;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import org.corfudb.universe.universe.Universe;
 import org.slf4j.event.Level;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -97,7 +100,7 @@ public interface CorfuServer extends Node {
             return getName() + ":" + port;
         }
 
-        public Path getServerLogDir(){
+        public Path getServerLogDir() {
             String clusterLogPath = getName() + "_" + LocalDateTime.now().format(DATE_FORMATTER);
             return Paths.get(baseDir, CORFU_DB_PATH, clusterLogPath);
         }

@@ -1,9 +1,11 @@
 package org.corfudb.universe.group;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.corfudb.universe.node.CorfuServer.ServerParams;
+import org.corfudb.universe.node.LocalCorfuClient;
 import org.corfudb.universe.node.Node;
 import org.corfudb.universe.util.ClassUtils;
 
@@ -77,4 +79,11 @@ public abstract class AbstractCorfuCluster implements CorfuCluster {
         return ClassUtils.cast(ImmutableMap.copyOf(nodes));
     }
 
+    @Override
+    public LocalCorfuClient getLocalCorfuClient(ImmutableList<String> layoutServers) {
+        return LocalCorfuClient.builder()
+                .serverEndpoints(layoutServers)
+                .build()
+                .deploy();
+    }
 }

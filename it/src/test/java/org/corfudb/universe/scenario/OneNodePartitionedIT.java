@@ -22,7 +22,9 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.corfudb.runtime.view.ClusterStatusReport.ClusterStatus;
-import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.*;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_STREAM_NAME;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TABLE_ITER;
+import static org.corfudb.universe.scenario.fixture.Fixtures.TestFixtureConst.DEFAULT_TIMEOUT_LONG;
 import static org.corfudb.universe.universe.Universe.UniverseParams;
 
 public class OneNodePartitionedIT {
@@ -44,10 +46,10 @@ public class OneNodePartitionedIT {
 
     /**
      * Test cluster behavior after one node partitioned symmetrically
-     *
+     * <p>
      * 1) Deploy and bootstrap a three nodes cluster
      * 2) Symmetrically partition one node so that it can't communicate
-     *    to any other node in cluster and vice versa
+     * to any other node in cluster and vice versa
      * 3) Verify layout, cluster status and data path
      * 4) Recover cluster by reconnecting the partitioned node
      * 5) Verify layout, cluster status and data path again

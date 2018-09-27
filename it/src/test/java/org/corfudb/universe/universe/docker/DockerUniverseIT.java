@@ -38,6 +38,7 @@ public class DockerUniverseIT {
 
     /**
      * Deploy a single service then deploy a single corfu server and add the server into the service
+     *
      * @throws Exception an error
      */
     @Test

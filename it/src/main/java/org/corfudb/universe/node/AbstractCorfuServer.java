@@ -14,15 +14,15 @@ import java.io.FileReader;
 import java.io.IOException;
 
 @Slf4j
-public abstract class AbstractCorfuServer<T extends ServerParams> implements CorfuServer {
+public abstract class AbstractCorfuServer<T extends ServerParams, U extends UniverseParams> implements CorfuServer {
     public static final String ALL_NETWORK_INTERFACES = "0.0.0.0";
 
     @Getter
     protected final T params;
     @Getter
-    protected final UniverseParams universeParams;
+    protected final U universeParams;
 
-    protected AbstractCorfuServer(T params, UniverseParams universeParams) {
+    protected AbstractCorfuServer(T params, U universeParams) {
         this.params = params;
         this.universeParams = universeParams;
     }

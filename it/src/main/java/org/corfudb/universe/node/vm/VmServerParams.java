@@ -6,9 +6,9 @@ import lombok.Getter;
 import lombok.ToString;
 import org.slf4j.event.Level;
 
-import java.time.Duration;
-
-import static org.corfudb.universe.node.CorfuServer.*;
+import static org.corfudb.universe.node.CorfuServer.Mode;
+import static org.corfudb.universe.node.CorfuServer.Persistence;
+import static org.corfudb.universe.node.CorfuServer.ServerParams;
 
 
 /**
@@ -21,9 +21,9 @@ public class VmServerParams extends ServerParams {
     private final String vmName;
 
     @Builder
-    public VmServerParams(String vmName, String logDir, int port, Mode mode,  Persistence persistence,
-                          Level logLevel, int workflowNumRetry, Duration timeout, Duration pollPeriod) {
-        super(logDir, port, mode, persistence, logLevel, workflowNumRetry, timeout, pollPeriod);
+    public VmServerParams(String vmName, String logDir, int port, Mode mode, Persistence persistence,
+                          Level logLevel, String baseDir) {
+        super(logDir, port, mode, persistence, logLevel, baseDir);
         this.vmName = vmName;
     }
 }
