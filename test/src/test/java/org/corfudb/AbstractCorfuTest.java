@@ -65,7 +65,7 @@ public class AbstractCorfuTest {
     @AfterClass
     public static void shutdownNettyGroups() {
         TestThreadGroups.shutdownThreadGroups();
-        LOGGER.cleanup(TestLogger::reset);
+        LOGGER.get().reset();
     }
 
     /** A watcher which prints whether tests have failed or not, for a useful

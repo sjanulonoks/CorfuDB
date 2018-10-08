@@ -345,6 +345,6 @@ public class ManagementServer extends AbstractServer {
         managementAgent.shutdown();
 
         // Shut down the Corfu Runtime.
-        corfuRuntime.cleanup(CorfuRuntime::shutdown);
+        corfuRuntime.get().shutdown();
     }
 }

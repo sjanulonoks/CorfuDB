@@ -34,9 +34,9 @@ public class TestThreadGroups {
      * Gracefully shutdown the event loop groups.
      */
     public static void shutdownThreadGroups() {
-        NETTY_BOSS_GROUP.cleanup(EventLoopGroup::shutdownGracefully);
-        NETTY_WORKER_GROUP.cleanup(EventLoopGroup::shutdownGracefully);
-        NETTY_CLIENT_GROUP.cleanup(EventLoopGroup::shutdownGracefully);
+        NETTY_BOSS_GROUP.get().shutdownGracefully();
+        NETTY_WORKER_GROUP.get().shutdownGracefully();
+        NETTY_CLIENT_GROUP.get().shutdownGracefully();
     }
 
     /**

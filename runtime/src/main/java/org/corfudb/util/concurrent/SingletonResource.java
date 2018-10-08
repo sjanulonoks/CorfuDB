@@ -11,9 +11,7 @@ import javax.annotation.Nonnull;
  *
  * <p>A {@link SingletonResource} is a common resource pattern where the first thread that
  * needs to use a resource instantiates it. Subsequent threads should re-use the resource
- * instantiated by the first thread. The {@link SingletonResource#cleanup(Consumer)} allows
- * the developer to release resources if the resource has been instantiated (doing nothing
- * if no thread ever created the resource in the first place).
+ * instantiated by the first thread.
  *
  * @param <T> The type of resource this {@link SingletonResource} holds.
  */
@@ -27,7 +25,7 @@ public class SingletonResource<T> {
     /**
      * The resource to be held.
      */
-    private final AtomicReference<T> resource;
+    private volatile T resource;
 
     /**
      * Factory method with similar semantics as a {@link ThreadLocal}.
@@ -46,7 +44,6 @@ public class SingletonResource<T> {
      * @param generator A method to be called when a new {@link T} is needed.
      */
     private SingletonResource(Supplier<T> generator) {
-        this.resource = new AtomicReference<T>();
         this.generator = generator;
 
     }
@@ -57,22 +54,16 @@ public class SingletonResource<T> {
      * @return The resource provided by this {@link SingletonResource}.
      */
     public T get() {
-        return resource.updateAndGet(t -> t == null ? generator.get() : t);
-    }
-
-    /**
-     * Cleanup the resource if it has been generated. Otherwise does nothing.
-     *
-     * @param cleaner A {@link Consumer} which is provided the resource to perform cleanup
-     *                actions.
-     */
-    public void cleanup(@Nonnull Consumer<T> cleaner) {
-        resource.updateAndGet(t -> {
-            if (t != null) {
-                cleaner.accept(t);
+        T temp = resource;
+        if (temp == null) {
+            synchronized (this) {
+                temp = resource;
+                if (temp == null) {
+                    temp = generator.get();
+                    resource = temp;
+                }
             }
-            return null;
-        });
+        }
+        return temp;
     }
-
 }
